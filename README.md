@@ -70,3 +70,25 @@ You can download the jar from the run page under Artifacts.
 The cache holds `~/.gradle/caches` and `~/.gradle/wrapper`. Its key comes from the OS and a hash of the build files,
 so a run downloads Gradle and JUnit again only after a change to `build.gradle.kts`, `settings.gradle.kts` or the
 wrapper version.
+
+## Docker
+
+`Dockerfile` is a two-stage build. The build stage runs on `eclipse-temurin:21-jdk`, downloads the dependencies and
+builds the jar with the Gradle wrapper. The runtime stage starts from `eclipse-temurin:21-jre-alpine` and copies in
+only the jar and a sample file, so the sources, the Gradle wrapper and the JDK never reach the final image. The
+image runs as the unprivileged `app` user and is about 214 MB.
+
+```bash
+docker build -t word-stats .
+docker run --rm word-stats                       # analyses the bundled sample
+docker run --rm -v "$PWD/notes.txt:/data/in.txt:ro" word-stats /data/in.txt --top 3
+```
+
+The `docker` job in the workflow builds the image after the tests pass and pushes it to the GitHub Container
+Registry. `docker/metadata-action` tags each image by branch, by the short commit SHA (`sha-<hash>`) and, on `main`,
+with `latest`; a Git tag like `v1.2.3` also adds the version tags. Pulls are public:
+
+```bash
+docker pull ghcr.io/krasnopolskiy/word-stats:latest
+docker run --rm ghcr.io/krasnopolskiy/word-stats:latest
+```
