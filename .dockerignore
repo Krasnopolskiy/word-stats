@@ -1,0 +1,16 @@
+# Build outputs and caches: rebuilt inside the image, never copied in.
+build/
+.gradle/
+
+# Version control and CI metadata.
+.git/
+.github/
+.gitignore
+.gitattributes
+.editorconfig
+
+# Docs and the Windows wrapper the Linux image does not use.
+README.md
+gradlew.bat
+Dockerfile
+.dockerignore
